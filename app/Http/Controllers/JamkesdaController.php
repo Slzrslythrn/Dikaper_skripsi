@@ -22,6 +22,7 @@ use File;
 use Excel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Crypt;
 
 class JamkesdaController extends Controller
 {
@@ -623,18 +624,31 @@ class JamkesdaController extends Controller
         return redirect()->route('jamkesda');
     }
 
-    public function downloadDiterima($pasien_id)
-    {
+   
+
+public function downloadDiterima($encrypted_id)
+{
+    try {
+        // Dekripsi ID
+        $pasien_id = Crypt::decrypt($encrypted_id);
+        
         Carbon::setLocale('id');
         $pasien = Pasien::findOrFail($pasien_id);
-        $qrcode = base64_encode(QrCode::format('svg')->size(50)->errorCorrection('H')->generate(route('jamkesda.download.diterima', ['id' => $pasien_id])));
+        
+        // Generate QR Code dengan encrypted ID (opsional)
+        $qrcode = base64_encode(QrCode::format('svg')->size(50)->errorCorrection('H')->generate(
+            route('jamkesda.download.diterima', ['id' => $encrypted_id])
+        ));
+        
+        // Proses selanjutnya (logo, dll)
         $logoKotaBogor = base64_encode(file_get_contents(public_path('assets/logokotabogor.gif')));
         $logoDikaper = base64_encode(file_get_contents(public_path('assets/dikaper.jpeg')));
         $lineImage = base64_encode(file_get_contents(public_path('assets/line.png')));
         $ttdImage = base64_encode(file_get_contents(public_path('assets/ttd.jpg')));
+        
         $data = [
-            'title' => 'Welcome to ItSolutionStuff.com',
-            'date' => date('m/d/Y'),
+            'title' => 'Surat Penerimaan Jamkesda',
+            'date' => date('d/m/Y'),
             'pasien' => $pasien,
             'qrcode' => $qrcode,
             'logoKotaBogor' => $logoKotaBogor,
@@ -642,13 +656,15 @@ class JamkesdaController extends Controller
             'lineImage' => $lineImage,
             'ttdImage' => $ttdImage
         ];
-        // dd($data);
-        // $qrcode = base64_encode(\QrCode::format('svg')->size(200)->errorCorrection('H')->generate('string'));
 
         $pdf = PDF::loadView('pages.admin.pdf-diterima', $data);
+        return $pdf->stream('surat-penerimaan-'.Str::slug($pasien->nama_pasien).'.pdf');
 
-        return $pdf->stream('jamkesda-diterima.pdf');
+    } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+        abort(404, 'ID tidak valid');
     }
+}
+
 
     public function pembayaran($pasien_id)
     {

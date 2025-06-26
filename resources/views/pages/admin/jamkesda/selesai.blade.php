@@ -137,38 +137,42 @@
                                             <td>{{ $row->tanggal_lahir->isoFormat('D MMMM Y') }}</td>
                                             <td>{{ $row->rumahsakit->nama ?? 'Data Telah Dihapus' }}</td>
                                             <td>{{ $row->jenis_rawat }}</td>
-                                            <td>
+                                            <td>                                          
                                                 @if ($row->status == 'Diterima')
-                                                <a href="{{ route('jamkesda.download.diterima', ['id' => $row->pasien_id]) }}"
-                                                    class="btn btn-success" target="_blank">{{ $row->status }}</a>
-                                                @elseif ($row->status == 'Ditolak')
-                                                <button class="btn btn-danger">{{ $row->status }}</button>
-                                                <!-- Button trigger modal -->
-                                                <button type="button" class="btn btn-secondary mt-1" data-toggle="modal"
-                                                    data-target="#exampleModalCenter{{ $row->pasien_id }}">Lihat
-                                                    Keterangan</button>
-                                                <!-- Modal -->
-                                                <div class="modal fade" id="exampleModalCenter{{ $row->pasien_id }}">
-                                                    <div class="modal-dialog modal-dialog-centered" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title">Keterangan</h5>
-                                                                <button type="button" class="close"
-                                                                    data-dismiss="modal"><span>&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <p>{{ $row->keterangan_status }}</p>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-danger light"
-                                                                    data-dismiss="modal">Tutup</button>
+                                                @php
+                                                    $encryptedId = \Illuminate\Support\Facades\Crypt::encrypt($row->pasien_id);
+                                                @endphp
+                                                <a href="{{ route('jamkesda.download.diterima', ['id' => $encryptedId]) }}" 
+                                                class="btn btn-success fa fa-eye" target="_blank">
+                                                {{ $row->status }}
+                                                </a>
+                                            @elseif ($row->status == 'Ditolak')
+                                                    <button class="btn btn-danger">{{ $row->status }}</button>
+                                                    <!-- Button trigger modal -->
+                                                    <button type="button" class="btn btn-secondary mt-1" data-toggle="modal"
+                                                            data-target="#exampleModalCenter{{ $row->pasien_id }}">Lihat Keterangan</button>
+                                                    <!-- Modal -->
+                                                    <div class="modal fade" id="exampleModalCenter{{ $row->pasien_id }}">
+                                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Keterangan</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <p>{{ $row->keterangan_status }}</p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-danger light" data-dismiss="modal">Tutup</button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                @else
+                                                    <span class="badge badge-secondary">Status Tidak Diketahui</span>
                                                 @endif
                                             </td>
+
                                             <td>
                                                 @if ($row->pembayaran)
                                                 @if ($row->pembayaran->keterangan == 0)

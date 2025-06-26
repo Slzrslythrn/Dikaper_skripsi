@@ -83,6 +83,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/proses/{id}/diterima', [App\Http\Controllers\JamkesdaController::class, 'prosesDiterima'])->name('jamkesda.proses.diterima');
             Route::post('/proses/ditolak', [App\Http\Controllers\JamkesdaController::class, 'prosesDitolak'])->name('jamkesda.proses.ditolak');
             Route::post('/proses/dikembalikan', [App\Http\Controllers\JamkesdaController::class, 'prosesDikembalikan'])->name('jamkesda.proses.dikembalikan');
+            Route::get('/jamkesda/pengajuan/download/{id}/diterima', [App\Http\Controllers\JamkesdaController::class, 'downloadDiterima'])
+     ->name('jamkesda.download.diterima');
         });
 
         Route::group(['prefix' => 'pengajuan'], function () {
